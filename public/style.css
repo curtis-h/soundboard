@@ -1,0 +1,24 @@
+* {
+	box-sizing: border-box;
+}
+body {
+    background-color: #eee;
+}
+
+.header {
+	height: 50px;
+	padding: 0.5rem;
+}
+
+.container {
+	padding: 1rem;
+}
+
+.category {
+	background-color: #e2e4e6;
+	border-radius: 5px;
+	float: left;
+	margin: 0 1rem 1rem 0;
+	padding: 0.5rem;
+	width: 300px;
+}

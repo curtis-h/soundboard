@@ -1,13 +1,43 @@
-<html ng-app="dndSoundboardApp">
+<html ng-app="dndSoundboard">
 <head>
     <title>DnD Soundboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link type="text/css" rel="stylesheet" href="style.css" />
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular.js"></script>
-    
+    <script src="main.js"></script>
 </head>
-<body ng-controller="">
-
+<body ng-controller="soundBoardController">
+    <div class="header">Soundboard</div>
+    <div class="container">
+        <div class="category" data-ng-repeat="cat in categories">
+            <h2>{{ cat.name }}</h2>
+            <div class="list">
+                <div data-ng-repeat="sound in cat.sounds">
+                    {{ sound }}
+                </div>
+                <div>
+                    <button data-ng-click="addSoundPopup(cat)">Add a sound</button>
+                </div>
+            </div>
+        </div>
+        <div class="category">
+           <form data-ng-submit="addCategory()">
+                <span id="placeholder" class="placeholder">Add a category</span>
+                <input data-ng-model="newCategoryName" placeholder="Add a category" />
+                <button>Save</button>
+           </form>
+        </div>
+    </div>
+    
+    <div class="modal">
+        <div class="add-sound-modal">
+            <form data-ng-submit="addSound()">
+                <input data-ng-model="newSoundName" />
+                <button>Save</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
 
