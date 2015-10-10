@@ -22,3 +22,30 @@ body {
 	padding: 0.5rem;
 	width: 300px;
 }
+
+.modal {
+    height: 100%;
+    left: 0px;
+    position: absolute;
+    top: 0px;
+    width: 100%;
+}
+
+.modal-background {
+    background-color: black;
+    height: 100%;
+    left: 0px;
+    opacity: 0.5;
+    position: absolute;
+    top: 0px;
+    width: 100%;
+}
+
+.modal-content {
+	background-color: #e2e4e6;
+	margin: 0 auto;
+	padding: 0.5em;
+	position: relative;
+	top: 30%;
+	width: 300px;
+}

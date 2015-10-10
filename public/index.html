@@ -1,10 +1,11 @@
-<html ng-app="dndSoundboard">
+<html ng-app="Soundboard">
 <head>
     <title>DnD Soundboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link type="text/css" rel="stylesheet" href="style.css" />
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script src="main.js"></script>
 </head>
 <body ng-controller="soundBoardController">
@@ -14,7 +15,7 @@
             <h2>{{ cat.name }}</h2>
             <div class="list">
                 <div data-ng-repeat="sound in cat.sounds">
-                    {{ sound }}
+                    <div youtube="sound"></div>
                 </div>
                 <div>
                     <button data-ng-click="addSoundPopup(cat)">Add a sound</button>
@@ -30,8 +31,10 @@
         </div>
     </div>
     
-    <div class="modal">
-        <div class="add-sound-modal">
+    
+    <div class="modal" data-ng-show="focus">
+        <div class="modal-background" data-ng-click="focus=false"></div>
+        <div class="modal-content">
             <form data-ng-submit="addSound()">
                 <input data-ng-model="newSoundName" />
                 <button>Save</button>
