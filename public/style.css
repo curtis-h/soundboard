@@ -12,14 +12,16 @@ body {
 
 .container {
 	padding: 1rem;
+	white-space: nowrap;
 }
 
 .category {
 	background-color: #e2e4e6;
 	border-radius: 5px;
-	float: left;
+	display: inline-block;
 	margin: 0 1rem 1rem 0;
 	padding: 0.5rem;
+	vertical-align: top;
 	width: 300px;
 }
 

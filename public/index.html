@@ -13,10 +13,10 @@
 <body ng-controller="soundBoardController">
     <div class="header">Soundboard</div>
     <div class="container">
-        <div class="category" data-ng-repeat="cat in categories">
+        <div class="category" data-ng-repeat="cat in categories track by cat._id">
             <h2>{{ cat.name }}</h2>
             <div class="list">
-                <div data-ng-repeat="sound in cat.sounds">
+                <div data-ng-repeat="sound in cat.sounds track by sound">
                     <div youtube="sound"></div>
                 </div>
                 <div>
@@ -43,8 +43,6 @@
             </form>
         </div>
     </div>
-    
-    
 </body>
 </html>
 
