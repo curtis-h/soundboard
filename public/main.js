@@ -2,8 +2,9 @@ var socket = io();
 
 var app = angular.module('Soundboard', [])
 .controller('soundBoardController', ['$scope', function($scope) {
-    $scope.focus      = false;
-    $scope.categories = [];
+    $scope.focus           = false;
+    $scope.categories      = [];
+    $scope.newCategoryName = '';
     
     
     $scope.addCategory = function() {
@@ -17,27 +18,23 @@ var app = angular.module('Soundboard', [])
         }
     };
     
-    $scope.addSoundPopup = function(category) {
-        
-        $scope.focus = category;
+    $scope.$on('addSound', function(event, data) {
+        $scope.focus = event.targetScope.category;
         console.log($scope.focus);
-    };
+    });
     
     $scope.addSound = function() {
-        if(!!$scope.newSoundName) {
-            var id = getYoutubeId($scope.newSoundName);
+        if(!!$scope.newSound.name && !!$scope.newSound.link) {
+            var id = getYoutubeId($scope.newSound.link);
             
-            if(!!id && !!id[1]) {
+            if(id) {
                 
-                console.log(id);
-                id = id[1];
-                // TODO - check for existance
-                // TODO - save to server
-                $scope.focus.sounds.push(id);
+                // TODO - check for existence
+                $scope.newSound.ident = id;
+                $scope.focus.sounds.push($scope.newSound);
                 console.log($scope.focus);
                 socket.emit('save', $scope.focus);
-                $scope.newSoundName = '';
-                
+                newSound();
             }
         }
     };
@@ -46,7 +43,6 @@ var app = angular.module('Soundboard', [])
     socket.on('categories', function(cats) {
         console.log('categories', cats);
         $scope.$apply(function() {
-            console.log($scope.categories);
             $scope.categories = cats;
         });
     });
@@ -73,33 +69,57 @@ var app = angular.module('Soundboard', [])
         });
     });
     
+    function newSound() {
+        $scope.newSound = {
+            name: '',
+            link: '',
+            ident: ''
+        };
+    }
+    
     
     function getYoutubeId(text) {
-        var regex = /https?:\/\/(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube(?:-nocookie)?\.com\S*[^\w\s-])([\w-]{11})(?=[^\w-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/ig;
-        return regex.exec(text);
+        var regex  = /(?:https:\/\/)?(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube(?:-nocookie)?\.com\S*[^\w\s-])([\w-]{11})(?=[^\w-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/ig;
+        var result =  regex.exec(text);
+
+        return (!!result && !!result[1]) ? result[1] : false
     }
 }]);
+
+
+app.directive('category', function() {
+    return {
+        scope: {
+            category: "="
+        },
+        templateUrl: 'templates/category',
+        link: function($scope, element, attrs) {
+            $scope.addSound = function() {
+                $scope.$emit('addSound', 'test');
+            }
+        }
+    };
+});
 
 app.directive('youtube', function() {
     return {
         scope: {
-            data: "=youtube"
+            sound: "=youtube"
         },
-        template: '<div><h3>Sound {{ $id }}</h3><div class="controls"><button ng-click="toggle()">Play</button></div><div class="player"></div></div>',
+        templateUrl: 'templates/youtube',
         link: function($scope, element, attrs) {
-            var videoId = $scope.data;
-            var playing = false
+            var videoId = $scope.sound.ident;
             var player;
-            
-            $scope.ready = false;
+            $scope.playing = false;
+            $scope.ready   = false;
             
             $scope.toggle = function() {
-                if(playing) {
-                    playing = false;
+                if($scope.playing) {
+                    $scope.playing = false;
                     player.pauseVideo();
                 }
                 else {
-                    playing = true;
+                    $scope.playing = true;
                     player.playVideo();
                 }
             };
@@ -127,6 +147,11 @@ app.directive('youtube', function() {
 
             function onPlayerStateChange(event) {
                 console.log('change', event);
+                $scope.$apply(function() {
+                    if(!!event && typeof(event.data) != 'undefined' && event.data == 0) {
+                        $scope.playing = false;
+                    }
+                });
             }
             
             function stopVideo() {

@@ -14,15 +14,7 @@
     <div class="header">Soundboard</div>
     <div class="container">
         <div class="category" data-ng-repeat="cat in categories track by cat._id">
-            <h2>{{ cat.name }}</h2>
-            <div class="list">
-                <div data-ng-repeat="sound in cat.sounds track by sound">
-                    <div youtube="sound"></div>
-                </div>
-                <div>
-                    <button data-ng-click="addSoundPopup(cat)">Add a sound</button>
-                </div>
-            </div>
+            <div category="cat"></div>
         </div>
         <div class="category">
            <form data-ng-submit="addCategory()">
@@ -38,11 +30,37 @@
         <div class="modal-background" data-ng-click="focus=false"></div>
         <div class="modal-content">
             <form data-ng-submit="addSound()">
-                <input data-ng-model="newSoundName" />
+                <input data-ng-model="newSound.name" />
+                <input data-ng-model="newSound.link" />
                 <button>Save</button>
             </form>
         </div>
     </div>
+    
+    <script type="text/ng-template" id="templates/category">
+        <h2>{{ category.name }}</h2>
+            <div >
+                <button ng-click="">Play All</button>
+            </div>
+            <div class="list">
+                <div data-ng-repeat="sound in category.sounds track by $index">
+                    <div youtube="sound"></div>
+                </div>
+                <div>
+                    <button data-ng-click="addSound()">Add a sound</button>
+                </div>
+            </div>
+    </script>
+    
+    <script type="text/ng-template" id="templates/youtube">
+        <div>
+            <h3>{{ sound.name }}</h3>
+            <div class="controls">
+                <button ng-click="toggle()">{{ playing ? 'pause' : 'play' }}</button>
+            </div>
+            <div class="player"></div>
+        </div>
+    </script>
 </body>
 </html>
 
