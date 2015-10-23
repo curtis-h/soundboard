@@ -11,7 +11,10 @@
     <script src="main.js"></script>
 </head>
 <body ng-controller="soundBoardController">
-    <div class="header">Soundboard</div>
+    <div class="header">
+        Soundboard
+        <button class="btn" ng-click="PageMode = !PageMode">{{ PageMode ? 'Controller' : 'Player' }}</button>
+    </div>
     <div class="container">
         <div class="category" data-ng-repeat="cat in categories track by cat._id">
             <div category="cat"></div>

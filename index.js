@@ -69,6 +69,12 @@ io.on('connection', function(socket) {
             
         }
     });
+    
+    socket.on('SongStateChange', function(data) {
+        console.log('SongStateChange', data);
+        socket.broadcast.emit('SongStateChange', data);
+
+    });
 });
 
 

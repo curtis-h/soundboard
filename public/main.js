@@ -1,10 +1,17 @@
-var socket = io();
+// pagemode - defaults to player, true is controller
+var PageMode = false;
+var Socket   = io();
 
 var app = angular.module('Soundboard', [])
 .controller('soundBoardController', ['$scope', function($scope) {
     $scope.focus           = false;
     $scope.categories      = [];
     $scope.newCategoryName = '';
+    
+    $scope.$watch('PageMode', function(newVal) {
+        console.log('page mode', newVal);
+        PageMode = newVal;
+    });
     
     
     $scope.addCategory = function() {
@@ -14,7 +21,7 @@ var app = angular.module('Soundboard', [])
                 sounds: []
             };
             
-            socket.emit('save', cat);
+            Socket.emit('save', cat);
         }
     };
     
@@ -33,21 +40,21 @@ var app = angular.module('Soundboard', [])
                 $scope.newSound.ident = id;
                 $scope.focus.sounds.push($scope.newSound);
                 console.log($scope.focus);
-                socket.emit('save', $scope.focus);
+                Socket.emit('save', $scope.focus);
                 newSound();
             }
         }
     };
     
 
-    socket.on('categories', function(cats) {
+    Socket.on('categories', function(cats) {
         console.log('categories', cats);
         $scope.$apply(function() {
             $scope.categories = cats;
         });
     });
     
-    socket.on('saved', function(cat) {
+    Socket.on('saved', function(cat) {
         $scope.$apply(function() {
             console.log('saved', cat);
             var found = false;
@@ -69,14 +76,31 @@ var app = angular.module('Soundboard', [])
         });
     });
     
+    var lut = [];
+    for(var i=0; i<256; i++) {
+        lut[i] = (i<16?'0':'')+(i).toString(16);
+    }
+    
+    function uuid() {
+        var d0 = Math.random()*0xffffffff|0;
+        var d1 = Math.random()*0xffffffff|0;
+        var d2 = Math.random()*0xffffffff|0;
+        var d3 = Math.random()*0xffffffff|0;
+        return lut[d0&0xff]+lut[d0>>8&0xff]+lut[d0>>16&0xff]+lut[d0>>24&0xff]+'-'+
+            lut[d1&0xff]+lut[d1>>8&0xff]+'-'+lut[d1>>16&0x0f|0x40]+lut[d1>>24&0xff]+'-'+
+            lut[d2&0x3f|0x80]+lut[d2>>8&0xff]+'-'+lut[d2>>16&0xff]+lut[d2>>24&0xff]+
+            lut[d3&0xff]+lut[d3>>8&0xff]+lut[d3>>16&0xff]+lut[d3>>24&0xff];
+    }
+    
     function newSound() {
         $scope.newSound = {
+            uuid: uuid(),
             name: '',
             link: '',
             ident: ''
         };
     }
-    
+    newSound();
     
     function getYoutubeId(text) {
         var regex  = /(?:https:\/\/)?(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube(?:-nocookie)?\.com\S*[^\w\s-])([\w-]{11})(?=[^\w-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/ig;
@@ -114,18 +138,38 @@ app.directive('youtube', function() {
             $scope.ready   = false;
             
             $scope.toggle = function() {
+                if(!$scope.ready) { return; }
+                
                 if($scope.playing) {
-                    $scope.playing = false;
-                    player.pauseVideo();
+                    pause();
                 }
                 else {
-                    $scope.playing = true;
-                    player.playVideo();
+                    play();
                 }
             };
             
+            Socket.on('SongStateChange', function(data) {
+                
+                if(data.uuid == $scope.sound.uuid) {
+                    console.log('song state changed', data);
+                    /*
+                    UNSTARTED: -1
+                    ENDED: 0
+                    PLAYING: 1
+                    PAUSED: 2
+                    BUFFERING: 3
+                    CUED: 5
+                     */
+                    switch(data.status) {
+                        case YT.PlayerState.PLAYING: play();  break;
+                        case YT.PlayerState.PAUSED:  pause(); break;
+                        default:                     stop();  break;
+                    }
+                }
+            });
             
             function onYouTubeIframeAPIReady() {
+                if(PageMode) { return; }
                 var elem = element[0].querySelector('.player');
                 
                 player = new YT.Player(elem, {
@@ -146,16 +190,43 @@ app.directive('youtube', function() {
             }
 
             function onPlayerStateChange(event) {
-                console.log('change', event);
                 $scope.$apply(function() {
+                    console.log('change', event);
+                    
                     if(!!event && typeof(event.data) != 'undefined' && event.data == 0) {
-                        $scope.playing = false;
+                        //stop();
                     }
                 });
             }
             
+            function play() {
+                $scope.playing = true;
+                if(PageMode) {
+                    Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.PLAYING});
+                }
+                else {
+                    player.playVideo();
+                }
+            }
+            
+            function pause() {
+                $scope.playing = false;
+                if(PageMode) {
+                    Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.PAUSED});
+                }
+                else {
+                    player.pauseVideo();
+                }
+            }
+            
             function stopVideo() {
-                player.stopVideo();
+                $scope.playing = false;
+                if(PageMode) {
+                    Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.ENDED});
+                }
+                else {
+                    player.stopVideo();
+                }
             }
             
             onYouTubeIframeAPIReady();
