@@ -1,9 +1,10 @@
-// pagemode - defaults to player, true is controller
-var PageMode = false;
+// pagemode - false is player, true is controller
+var PageMode = location.pathname.indexOf('play') > -1 ? false : true;
 var Socket   = io();
 
 var app = angular.module('Soundboard', [])
 .controller('soundBoardController', ['$scope', function($scope) {
+    $scope.PageMode        = PageMode;
     $scope.focus           = false;
     $scope.categories      = [];
     $scope.newCategoryName = '';
@@ -119,7 +120,7 @@ app.directive('category', function() {
         templateUrl: 'templates/category',
         link: function($scope, element, attrs) {
             $scope.addSound = function() {
-                $scope.$emit('addSound', 'test');
+                $scope.$emit('addSound');
             }
         }
     };
@@ -138,8 +139,6 @@ app.directive('youtube', function() {
             $scope.ready   = false;
             
             $scope.toggle = function() {
-                if(!$scope.ready) { return; }
-                
                 if($scope.playing) {
                     pause();
                 }
@@ -149,23 +148,24 @@ app.directive('youtube', function() {
             };
             
             Socket.on('SongStateChange', function(data) {
-                
-                if(data.uuid == $scope.sound.uuid) {
-                    console.log('song state changed', data);
-                    /*
-                    UNSTARTED: -1
-                    ENDED: 0
-                    PLAYING: 1
-                    PAUSED: 2
-                    BUFFERING: 3
-                    CUED: 5
-                     */
-                    switch(data.status) {
-                        case YT.PlayerState.PLAYING: play();  break;
-                        case YT.PlayerState.PAUSED:  pause(); break;
-                        default:                     stop();  break;
+                $scope.$apply(function() {
+                    if(data.uuid == $scope.sound.uuid) {
+                        console.log('song state changed', data);
+                        /*
+                        UNSTARTED: -1
+                        ENDED: 0
+                        PLAYING: 1
+                        PAUSED: 2
+                        BUFFERING: 3
+                        CUED: 5
+                         */
+                        switch(data.status) {
+                            case YT.PlayerState.PLAYING: play();      break;
+                            case YT.PlayerState.PAUSED:  pause();     break;
+                            default:                     stop(true);  break;
+                        }
                     }
-                }
+                });
             });
             
             function onYouTubeIframeAPIReady() {
@@ -193,8 +193,9 @@ app.directive('youtube', function() {
                 $scope.$apply(function() {
                     console.log('change', event);
                     
-                    if(!!event && typeof(event.data) != 'undefined' && event.data == 0) {
-                        //stop();
+                    if(!PageMode && !!event && typeof(event.data) != 'undefined' && event.data == 0) {
+                        stop();
+                        Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.ENDED});
                     }
                 });
             }
@@ -219,13 +220,15 @@ app.directive('youtube', function() {
                 }
             }
             
-            function stopVideo() {
+            function stop(received) {
                 $scope.playing = false;
                 if(PageMode) {
-                    Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.ENDED});
+                    if(!!received)
+                        Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.ENDED});
                 }
                 else {
                     player.stopVideo();
+                    player.seekTo(0);
                 }
             }
             

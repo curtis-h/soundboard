@@ -71,11 +71,13 @@ io.on('connection', function(socket) {
     });
     
     socket.on('SongStateChange', function(data) {
-        console.log('SongStateChange', data);
+        console.log('SongStateChange', socket.id, data);
         socket.broadcast.emit('SongStateChange', data);
-
     });
 });
 
 
 app.use(express.static(__dirname + '/public'));
+app.get('/play', function(req, res) {
+    res.sendFile(__dirname + '/public/index.html');
+});

@@ -40,16 +40,20 @@
         </div>
     </div>
     
+    <div class="playerOverlay" ng-if="!PageMode">
+        &nbsp;
+    </div>
+    
     <script type="text/ng-template" id="templates/category">
-        <h2>{{ category.name }}</h2>
+        <h2>{{ category.name }} - <button ng-click="">Play All</button></h2>
             <div >
-                <button ng-click="">Play All</button>
+                
             </div>
             <div class="list">
                 <div data-ng-repeat="sound in category.sounds track by $index">
                     <div youtube="sound"></div>
                 </div>
-                <div>
+                <div class="add-a-sound">
                     <button data-ng-click="addSound()">Add a sound</button>
                 </div>
             </div>
