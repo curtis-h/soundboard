@@ -63,7 +63,9 @@
         <div>
             <h3>{{ sound.name }}</h3>
             <div class="controls">
-                <button ng-click="toggle()">{{ playing ? 'pause' : 'play' }}</button>
+                <button ng-click="toggle()">{{ playing ? 'Pause' : 'Play' }}</button>
+                <button ng-click="loop()">{{ looping ? 'Loop Off' : 'Loop On' }}</button>
+                <button ng-if="playing" ng-click="stop()">Stop</button>
             </div>
             <div class="player"></div>
         </div>

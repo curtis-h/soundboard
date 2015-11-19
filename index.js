@@ -20,7 +20,7 @@ MongoClient.connect('mongodb://localhost:27017/soundboard', function(err, databa
 
 
 
-var io      = require('socket.io')(server);
+var io = require('socket.io')(server);
 io.on('connection', function(socket) {
     
     var cats = [];
@@ -73,6 +73,11 @@ io.on('connection', function(socket) {
     socket.on('SongStateChange', function(data) {
         console.log('SongStateChange', socket.id, data);
         socket.broadcast.emit('SongStateChange', data);
+    });
+    
+    socket.on('LoopChange', function(data) {
+        console.log('Loop Change', socket.id, data);
+        socket.broadcast.emit('LoopChange', data);
     });
 });
 

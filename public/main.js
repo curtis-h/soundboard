@@ -36,7 +36,6 @@ var app = angular.module('Soundboard', [])
             var id = getYoutubeId($scope.newSound.link);
             
             if(id) {
-                
                 // TODO - check for existence
                 $scope.newSound.ident = id;
                 $scope.focus.sounds.push($scope.newSound);
@@ -47,7 +46,6 @@ var app = angular.module('Soundboard', [])
         }
     };
     
-
     Socket.on('categories', function(cats) {
         console.log('categories', cats);
         $scope.$apply(function() {
@@ -135,8 +133,9 @@ app.directive('youtube', function() {
         link: function($scope, element, attrs) {
             var videoId = $scope.sound.ident;
             var player;
-            $scope.playing = false;
             $scope.ready   = false;
+            $scope.playing = false;
+            $scope.looping = false;
             
             $scope.toggle = function() {
                 if($scope.playing) {
@@ -146,6 +145,21 @@ app.directive('youtube', function() {
                     play();
                 }
             };
+            
+            $scope.loop = function() {
+                $scope.looping = !$scope.looping;
+                Socket.emit('LoopChange', {uuid: $scope.sound.uuid, status: $scope.looping});
+            };
+            
+            $scope.stop = function() { stop(); };
+            
+            Socket.on('LoopChange', function(data) {
+                if(data.uuid == $scope.sound.uuid) {
+                    $scope.$apply(function() {
+                        $scope.looping = data.status;
+                    });
+                }
+            });
             
             Socket.on('SongStateChange', function(data) {
                 $scope.$apply(function() {
@@ -194,8 +208,14 @@ app.directive('youtube', function() {
                     console.log('change', event);
                     
                     if(!PageMode && !!event && typeof(event.data) != 'undefined' && event.data == 0) {
-                        stop();
-                        Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.ENDED});
+                        if($scope.looping) {
+                            player.seekTo(0);
+                            play();
+                        }
+                        else {
+                            stop();
+                            Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.ENDED});
+                        }
                     }
                 });
             }
@@ -223,7 +243,7 @@ app.directive('youtube', function() {
             function stop(received) {
                 $scope.playing = false;
                 if(PageMode) {
-                    if(!!received)
+                    if(!received)
                         Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.ENDED});
                 }
                 else {
