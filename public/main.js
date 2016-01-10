@@ -1,6 +1,16 @@
+var UID = 1;
 // pagemode - false is player, true is controller
 var PageMode = location.pathname.indexOf('play') > -1 ? false : true;
-var Socket   = io();
+//var Socket   = io();
+
+var dbName = 'soundboard';
+var dbUrl  = 'http://couch.curtish.me/';
+var db     = new PouchDB(dbName);
+
+db.sync(dbUrl+dbName, {live: true}).on('change', function(data) {
+    console.log('sync change', data);
+});
+
 
 var app = angular.module('Soundboard', [])
 .controller('soundBoardController', ['$scope', function($scope) {
@@ -18,11 +28,17 @@ var app = angular.module('Soundboard', [])
     $scope.addCategory = function() {
         if(!!$scope.newCategoryName && $scope.newCategoryName.length) {
             var cat = {
-                name: $scope.newCategoryName,
-                sounds: []
+                '_id':    new Date().toISOString(),
+                'uid':    UID,
+                'type':   'category',
+                'name':   $scope.newCategoryName,
+                'sounds': []
             };
             
-            Socket.emit('save', cat);
+            db.put(cat, function(err, result) {
+                console.log(result, err);
+            });
+            //Socket.emit('save', cat);
         }
     };
     
@@ -40,12 +56,12 @@ var app = angular.module('Soundboard', [])
                 $scope.newSound.ident = id;
                 $scope.focus.sounds.push($scope.newSound);
                 console.log($scope.focus);
-                Socket.emit('save', $scope.focus);
+                //Socket.emit('save', $scope.focus);
                 newSound();
             }
         }
     };
-    
+/*
     Socket.on('categories', function(cats) {
         console.log('categories', cats);
         $scope.$apply(function() {
@@ -74,7 +90,7 @@ var app = angular.module('Soundboard', [])
             $scope.newCategoryName = '';
         });
     });
-    
+//*/
     var lut = [];
     for(var i=0; i<256; i++) {
         lut[i] = (i<16?'0':'')+(i).toString(16);
@@ -148,11 +164,11 @@ app.directive('youtube', function() {
             
             $scope.loop = function() {
                 $scope.looping = !$scope.looping;
-                Socket.emit('LoopChange', {uuid: $scope.sound.uuid, status: $scope.looping});
+                //Socket.emit('LoopChange', {uuid: $scope.sound.uuid, status: $scope.looping});
             };
             
             $scope.stop = function() { stop(); };
-            
+/*
             Socket.on('LoopChange', function(data) {
                 if(data.uuid == $scope.sound.uuid) {
                     $scope.$apply(function() {
@@ -181,7 +197,7 @@ app.directive('youtube', function() {
                     }
                 });
             });
-            
+//*/
             function onYouTubeIframeAPIReady() {
                 if(PageMode) { return; }
                 var elem = element[0].querySelector('.player');
@@ -214,7 +230,7 @@ app.directive('youtube', function() {
                         }
                         else {
                             stop();
-                            Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.ENDED});
+                            //Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.ENDED});
                         }
                     }
                 });
@@ -223,7 +239,7 @@ app.directive('youtube', function() {
             function play() {
                 $scope.playing = true;
                 if(PageMode) {
-                    Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.PLAYING});
+                    //Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.PLAYING});
                 }
                 else {
                     player.playVideo();
@@ -233,7 +249,7 @@ app.directive('youtube', function() {
             function pause() {
                 $scope.playing = false;
                 if(PageMode) {
-                    Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.PAUSED});
+                    //Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.PAUSED});
                 }
                 else {
                     player.pauseVideo();
@@ -244,7 +260,7 @@ app.directive('youtube', function() {
                 $scope.playing = false;
                 if(PageMode) {
                     if(!received)
-                        Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.ENDED});
+                        //Socket.emit('SongStateChange', {uuid: $scope.sound.uuid, status: YT.PlayerState.ENDED});
                 }
                 else {
                     player.stopVideo();
