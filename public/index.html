@@ -4,13 +4,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link type="text/css" rel="stylesheet" href="style.css" />
     
-    <script src="//cdn.jsdelivr.net/pouchdb/5.1.0/pouchdb.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular.js"></script>
+    <script src="//cdn.jsdelivr.net/pouchdb/5.1.0/pouchdb.min.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="main.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/db.js"></script>
+    <script src="/js/controller.js"></script>
+    <script src="/js/directives/youtube.js"></script>
 </head>
-<body ng-controller="soundBoardController">
+<body ng-controller="SoundboardController">
     <div class="header">
         Soundboard
         <button class="btn" ng-click="PageMode = !PageMode">{{ PageMode ? 'Controller' : 'Player' }}</button>
@@ -22,7 +24,7 @@
         <div class="category">
            <form data-ng-submit="addCategory()">
                 <span id="placeholder" class="placeholder">Add a category</span>
-                <input data-ng-model="newCategoryName" placeholder="Add a category" />
+                <input data-ng-model="categoryName" placeholder="Add a category" />
                 <button>Save</button>
            </form>
         </div>
@@ -50,7 +52,7 @@
                 
             </div>
             <div class="list">
-                <div data-ng-repeat="sound in category.sounds track by $index">
+                <div data-ng-repeat="sound in sounds track by $index">
                     <div youtube="sound"></div>
                 </div>
                 <div class="add-a-sound">
@@ -63,9 +65,9 @@
         <div>
             <h3>{{ sound.name }}</h3>
             <div class="controls">
-                <button ng-click="toggle()">{{ playing ? 'Pause' : 'Play' }}</button>
-                <button ng-click="loop()">{{ looping ? 'Loop Off' : 'Loop On' }}</button>
-                <button ng-if="playing" ng-click="stop()">Stop</button>
+                <button ng-click="toggle()">{{ sound.playing ? 'Pause' : 'Play' }}</button>
+                <button ng-click="loop()">{{ sound.loop ? 'Loop Off' : 'Loop On' }}</button>
+                <button ng-if="sound.playing" ng-click="stop()">Stop</button>
             </div>
             <div class="player"></div>
         </div>

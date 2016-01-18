@@ -10,14 +10,14 @@ var server  = app.listen(8002, function() {
 var db;
 var MongoClient = require('mongodb').MongoClient;
 var ObjectId    = require('mongodb').ObjectID;
-
+/*
 MongoClient.connect('mongodb://localhost:27017/soundboard', function(err, database) {
     if(!err)
         console.log("Connected correctly to server.");
     
     db = database;
 });
-
+//*/
 
 
 var io = require('socket.io')(server);
