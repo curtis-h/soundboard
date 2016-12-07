@@ -29,6 +29,20 @@ button {
 	width: 300px;
 }
 
+.sound {
+    background-color: lightgrey;
+    margin-bottom: 10px;
+    padding: 10px;
+}
+.sound.playing {
+    background-color: lightgreen;
+}
+
+.sound h3 {
+    margin: 0;
+    padding: 0 0 10px 0;
+}
+
 .add-a-sound {
 	margin-top: 1em;
 	text-align: right;
@@ -37,7 +51,7 @@ button {
 .modal {
     height: 100%;
     left: 0px;
-    position: absolute;
+    position: fixed;
     top: 0px;
     width: 100%;
 }

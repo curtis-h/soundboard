@@ -12,10 +12,7 @@ app.service('dbService', [function() {
         db = new PouchDB(dbName);
     
         // define sync
-        return db.sync(dbUrl+dbName, {live: true})
-        
-        console.log('db connected');
-        return db;
+        return db.sync(dbUrl+dbName, {live: true, retry: true});
     };
     
     this.get = function(id) {

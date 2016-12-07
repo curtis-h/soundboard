@@ -3,14 +3,11 @@
     <title>DnD Soundboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link type="text/css" rel="stylesheet" href="style.css" />
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.6/angular.js"></script>
     <script src="//cdn.jsdelivr.net/pouchdb/5.1.0/pouchdb.min.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="/js/main.js"></script>
-    <script src="/js/db.js"></script>
-    <script src="/js/controller.js"></script>
-    <script src="/js/directives/youtube.js"></script>
+    <script src="app.js"></script>
 </head>
 <body ng-controller="SoundboardController">
     <div class="header">
@@ -29,8 +26,8 @@
            </form>
         </div>
     </div>
-    
-    
+
+
     <div class="modal" data-ng-show="focus">
         <div class="modal-background" data-ng-click="focus=false"></div>
         <div class="modal-content">
@@ -41,37 +38,31 @@
             </form>
         </div>
     </div>
-    
+
     <div class="playerOverlay" ng-if="!PageMode">
         &nbsp;
     </div>
-    
+
     <script type="text/ng-template" id="templates/category">
-        <h2>{{ category.name }} - <button ng-click="">Play All</button></h2>
-            <div >
-                
-            </div>
+        <h2>{{ category.name }} - <button ng-click="playAll()">Play All</button></h2>
             <div class="list">
-                <div data-ng-repeat="sound in sounds track by $index">
-                    <div youtube="sound"></div>
-                </div>
+                <div class="sound" data-ng-repeat="sound in sounds | orderBy: 'position' track by $index" sound="sound" data-pos="$index"></div>
                 <div class="add-a-sound">
                     <button data-ng-click="addSound()">Add a sound</button>
                 </div>
             </div>
     </script>
-    
-    <script type="text/ng-template" id="templates/youtube">
+
+    <script type="text/ng-template" id="templates/sound">
         <div>
             <h3>{{ sound.name }}</h3>
             <div class="controls">
-                <button ng-click="toggle()">{{ sound.playing ? 'Pause' : 'Play' }}</button>
+                <button ng-click="toggle()">{{ playing == 2 ? 'Pause' : 'Play' }}</button>
                 <button ng-click="loop()">{{ sound.loop ? 'Loop Off' : 'Loop On' }}</button>
-                <button ng-if="sound.playing" ng-click="stop()">Stop</button>
+                <button ng-if="playing" ng-click="stop()">Stop</button>
             </div>
             <div class="player"></div>
         </div>
     </script>
 </body>
 </html>
-

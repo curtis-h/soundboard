@@ -1,13 +1,12 @@
 app.controller('SoundboardController', ['$scope', 'dbService', function($scope, db) {
     $scope.PageMode     = PageMode;
     $scope.categoryName = '';
-    
+
     db.getCategories().then(function(data) {
         $scope.$apply(function() {
             $scope.categories = data;
         });
     });
-    
 
     $scope.addCategory = function() {
         db.newCategory($scope.categoryName).then(function(success) {
@@ -19,14 +18,15 @@ app.controller('SoundboardController', ['$scope', 'dbService', function($scope, 
             }
         });
     };
-    
+
     $scope.$on('addSound', function(event, data) {
         $scope.focus = event.targetScope.category;
     });
-    
+
     $scope.addSound = function() {
         if(!!$scope.newSound.name && $scope.newSound.link) {
             var ytid = getYoutubeId($scope.newSound.link);
+            
             if(!!ytid) {
                 db.newSound($scope.focus._id, $scope.newSound, ytid)
                 .then(function(success) {
@@ -54,10 +54,25 @@ app.directive('category', ['dbService', function(db) {
             $scope.addSound = function() {
                 $scope.$emit('addSound');
             }
-            
+
+            $scope.playAll = function() {
+                console.log('play all');
+            };
+
             db.getSounds($scope.category._id).then(function(data) {
                 $scope.$apply(function() {
                     $scope.sounds = data;
+                });
+            });
+
+            $scope.$on('sort', function(event, position) {
+                $scope.$apply(function() {
+                    var filtered = $scope.sounds.filter(function(sound) {
+                        return sound._id != $scope.$root.draggable._id;
+                    });
+
+                    filtered.splice(position, 0, $scope.$root.draggable);
+                    $scope.sounds = filtered;
                 });
             });
         }
