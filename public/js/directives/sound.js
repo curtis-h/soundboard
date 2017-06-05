@@ -20,14 +20,17 @@ app.directive('sound', ['dbService', function(db) {
                 
                 switch(newVal) {
                     case 0:
+			element.removeClass('playing');
                         if(!!player) {
                             player.destroy();
                         }
                         break;
                     case 1:
+			element.removeClass('playing');
                         player.pauseVideo();
                         break;
                     case 2:
+			element.addClass('playing');
                         if(!!oldVal) {
                             player.playVideo();
                         }

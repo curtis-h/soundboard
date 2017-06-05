@@ -266,14 +266,17 @@ app.directive('sound', ['dbService', function(db) {
                 
                 switch(newVal) {
                     case 0:
+element.removeClass('playing');
                         if(!!player) {
                             player.destroy();
                         }
                         break;
                     case 1:
+element.removeClass('playing');
                         player.pauseVideo();
                         break;
                     case 2:
+element.addClass('playing');
                         if(!!oldVal) {
                             player.playVideo();
                         }
@@ -380,7 +383,7 @@ app.directive('youtube', ['dbService', function(db) {
                         db.get($scope.sound._id).then(function(sound) {
                             $scope.$apply(function() {
                                 console.log('sound get');
-                                console.log(sound);
+                                console.log(sound, element);
 
                                 $scope.sound = sound;
 
